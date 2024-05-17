@@ -1,7 +1,7 @@
-const User = require("../models/user"); // Importez User une seule fois
+const User = require("../models/user.model"); // Importez User une seule fois
 
-const { HttpError } = require("../utils/exceptions");
-const integretyTester = require("../utils/integrety.utils");
+const { HttpError } = require("../utils/execptions");
+const integretyTester = require("../utils/integrity");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
@@ -15,7 +15,7 @@ const {
   generateSecretResetEmail,
   generateEmailOptions,
   sendVerificationEmail,
-} = require("../mail/email");
+} = require("../utils/email");
 
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
