@@ -1,34 +1,8 @@
 const express = require("express");
-// import middleware from "../middlewares/auth.middleware.js";
-const user = require("../controllers/user.controller");
 const router = express.Router();
-
-const allowIfLoggedin = require("../middlewares/allowedIfLoggedin.middleware");
-router.get("/", (req, res) => {
-  res.json({ message: "Welcome to the authentication." });
-});
-
-const reviewRoutes = require("./review.routes");
-
-/**
- * @desc Route to register user
- * @route POST api/users
- * @access Private available for Admin
- */
-router.post(
-  "/register" /*, middleware.validateRegister*/,
-  user.userRegisterUser
-);
-
-/**
- * @desc Route to log a user
- * @route POST api/users
- * @access Private available for Admin
- */
-router.post("/login" /*, middleware.validateLogin*/, user.userLoginUser);
-
-router.put("/resetSecret/:id", allowIfLoggedin, user.resetSecret);
-
+const userRoutes = require("./user.routes");
+router.use("/user", userRoutes);
+// convos
+router.use("/conversation", conversationRoutes);
 router.use("/review", reviewRoutes);
-
 module.exports = router;

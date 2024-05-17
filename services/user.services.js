@@ -1,26 +1,31 @@
 const User = require("../models/user.model"); // Importez User une seule fois
+const SMS = require("../utils/sms/sms");
 
 const { HttpError } = require("../utils/execptions");
 const integretyTester = require("../utils/integrity");
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
 const jwt = require("jsonwebtoken");
-
-const {
-  transporter,
-  otpData,
-  tokenData,
-  generateOTP,
-  generateSecretEmail,
-  generateSecretResetEmail,
-  generateEmailOptions,
-  sendVerificationEmail,
-} = require("../utils/email");
+// const sms = require("../controllers/sms.controller");
+const SMSService = require("../services/sms.service");
 
 const isValidEmail = (email) => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 };
+
+const isValidSenegalPhoneNumber = (phoneNumber) => {
+  const phoneRegex = /^\+221\d{9}$/;
+  return phoneRegex.test(phoneNumber);
+};
+/**
+ * Génère un OTP (One-Time Password) aléatoire.
+ * @returns {string} - OTP généré.
+ */
+function generateOTP() {
+  return crypto.randomInt(100000, 999999).toString();
+}
 
 async function hashSecret(secret) {
   return bcrypt.hash(secret, 10);
@@ -43,9 +48,7 @@ class UserService {
       sexe,
       email,
       password,
-      role,
       phone,
-      compte,
       isDeleted = false,
       ...rest
     } = userData;
@@ -121,23 +124,23 @@ class UserService {
       validatedUserData.password = cryptPassword;
     }
 
-    if (
-      role &&
-      !["STUDENT", "TEACHER", "ADMIN", "SUPERADMIN"].includes(
-        role.toUpperCase()
-      )
-    ) {
-      throw new HttpError(400, "Rôle utilisateur invalide.");
-    }
+    // // if (
+    // //   role &&
+    // //   !["STUDENT", "TEACHER", "ADMIN", "SUPERADMIN"].includes(
+    // //     role.toUpperCase()
+    // //   )
+    // // ) {
+    // //   throw new HttpError(400, "Rôle utilisateur invalide.");
+    // // }
 
-    validatedUserData.role = role;
+    // validatedUserData.role = role;
 
-    if (!phone || typeof phone !== "string") {
-      throw new HttpError(
-        400,
-        "Le numéro de téléphone est requis et doit être un nombre."
-      );
-    }
+    // if (!phone || typeof phone !== "string") {
+    //   throw new HttpError(
+    //     400,
+    //     "Le numéro de téléphone est requis et doit être un nombre."
+    //   );
+    // }
     validatedUserData.phone = phone;
 
     if (Object.keys(rest).length > 0) {
@@ -149,13 +152,18 @@ class UserService {
 
   static async createUser(userData) {
     try {
-      const validatedUserData = await UserService.validateUserData(userData);
+      //   const validatedUserData = await UserService.validateUserData(userData);
       const secret = generateOTP();
       const hashedSecret = await hashSecret(secret);
-      validatedUserData.secret = hashedSecret;
-      const user = await User.create(validatedUserData);
-      const emailOptions = generateSecretEmail(user, secret);
-      await sendVerificationEmail(emailOptions);
+      const salt = await bcrypt.genSalt(10);
+      const cryptPassword = await bcrypt.hash(userData.password, salt);
+      userData.password = cryptPassword;
+      //   validatedUserData.secret = hashedSecret;
+      userData.secret = hashedSecret;
+      const user = await User.create(userData);
+      const content = SMS.sendSmsOPT(secret);
+      await SMSService.sendSMSAndSave(content, userData.phone);
+
       return user;
     } catch (error) {
       console.error(error);
@@ -170,48 +178,6 @@ class UserService {
       } else {
         throw new HttpError(error, 500, "Erreur interne du serveur.");
       }
-    }
-  }
-
-  static async loginUser(Userdata) {
-    try {
-      const { email, password } = Userdata;
-
-      let user = await User.findOne({ email });
-      if (!user) {
-        throw new HttpError(null, 400, "Identifiants invalides");
-      }
-
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        throw new HttpError(null, 400, "Identifiants invalides");
-      }
-
-      const payload = {
-        user: {
-          id: user.id,
-          username: user.username,
-          role: user.role,
-        },
-      };
-
-      let token;
-      try {
-        token = jwt.sign(payload, process.env.JWT_SECRET, {
-          expiresIn: process.env.JWT_EXPIRES_IN,
-        });
-      } catch (error) {
-        throw new HttpError(error, 500, "Échec de la génération du token.");
-      }
-
-      return {
-        token,
-        success: true,
-        message: "Authentifié",
-      };
-    } catch (error) {
-      if (error instanceof HttpError) throw error;
-      throw new HttpError(error, 500, "Erreur du serveur");
     }
   }
 
@@ -261,23 +227,6 @@ class UserService {
   static async getUserByPhone(userPhone) {
     try {
       const user = await User.findOne({ phone: userPhone });
-
-      if (!user) {
-        throw new HttpError(null, 404, "Utilisateur introuvable.");
-      }
-
-      return user;
-    } catch (error) {
-      if (error instanceof HttpError) {
-        throw error;
-      } else {
-        throw new HttpError(error, 500, "Erreur interne du serveur.");
-      }
-    }
-  }
-  static async getUserByCompte(compteId) {
-    try {
-      const user = await User.findOne({ compte: compteId });
 
       if (!user) {
         throw new HttpError(null, 404, "Utilisateur introuvable.");
@@ -371,7 +320,7 @@ class UserService {
 
     if (isValidEmail(identifiant)) {
       user = await UserService.getUserByEmail(identifiant);
-    } else if (isValidPhoneNumber(identifiant)) {
+    } else if (isValidSenegalPhoneNumber(identifiant)) {
       user = await UserService.getUserByPhone(identifiant);
     } else {
       user = await UserService.getUserById(identifiant);
