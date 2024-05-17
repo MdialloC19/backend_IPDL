@@ -1,0 +1,2 @@
+-   auth middleware for sockets
+-   bind un room a un trajet
