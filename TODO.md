@@ -1,2 +1,2 @@
 -   auth middleware for sockets
--   persist
+-   bind un room a un trajet

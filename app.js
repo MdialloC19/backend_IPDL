@@ -21,7 +21,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(helmet());
-app.use(authenticateToken);
+// app.use(authenticateToken);
 app.use("/api/v1", routes);
 // welcome message
 app.get("/", (req, res) => {

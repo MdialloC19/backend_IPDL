@@ -1,8 +1,22 @@
+const Conversation = require("../models/conversation.model");
+const Room = require("../models/room.model");
+
 const configureSockets = (io, client) => {
     return {
-        message: (message) => {
+        message: async (message) => {
             if (message.room) {
                 console.log("message.room", message.room);
+
+                // Save the message to the database
+                const room = await Room.findOne({ name: message.room });
+                if (!room) await Room.create({ name: message.room });
+                const newMessage = new Conversation({
+                    roomId: message.room,
+                    userId: message.from, // Assumes `from` is userId
+                    message: message.text, // Assumes `text` is the message content
+                });
+                await newMessage.save();
+
                 io.to(message.room).emit("message", message);
             } else {
                 io.emit("message", {
@@ -17,7 +31,7 @@ const configureSockets = (io, client) => {
             });
         },
 
-        discussion: (discussion) => {
+        discussion: async (discussion) => {
             if (discussion.room) {
                 io.to(discussion.room).emit("discussion", discussion);
             } else {
