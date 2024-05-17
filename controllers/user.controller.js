@@ -1,18 +1,9 @@
 const UserService = require("../services/user.services");
-const { HttpError } = require("../utils/execptions");
+const HttpError = require("../utils/execptions"); // Vérifiez ce chemin
 const enumUsersRoles = require("../utils/enums/enumUserRoles");
-const {
-  createValidationError,
-  createNotFoundError,
-} = require("../utils/errorshandler");
-const {
-  otpData,
-  tokenData,
-  generateOTP,
-  generateEmailOptions,
-  sendVerificationEmail,
-  generateSecretResetEmail,
-} = require("../utils/email");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken"); // Assurez-vous d'importer jwt
+
 /**
  * Enregistre un nouvel utilisateur
  * @param {import('express').Request} req - Requête Express
@@ -22,11 +13,12 @@ const {
 async function hashSecret(secret) {
   return bcrypt.hash(secret, 10);
 }
-const bcrypt = require("bcryptjs");
+const comparePassword = async (password, hashedPassword) => {
+  return await bcrypt.compare(password, hashedPassword);
+};
 const userRegisterUser = async (req, res) => {
   try {
     const registerUser = await UserService.createUser(req.body);
-
     return res.status(201).json(registerUser);
   } catch (error) {
     console.error(error);
@@ -38,16 +30,42 @@ const userRegisterUser = async (req, res) => {
   }
 };
 
-/**
- * Authentifie un utilisateur
- * @param {import('express').Request} req - Requête Express
- * @param {import('express').Response} res - Réponse Express
- * @returns {Promise<void>} - Promesse indiquant la fin du traitement
- */
 const userLoginUser = async (req, res) => {
   try {
-    const loginUser = await UserService.loginUser(req.body);
-    return res.status(200).json(loginUser);
+    const { phone, password } = req.body;
+
+    let user = await UserService.getUserByPhone(phone);
+    if (!user) {
+      throw new HttpError(null, 400, "Identifiants invalides");
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      throw new HttpError(null, 400, "Identifiants invalides");
+    }
+
+    const payload = {
+      user: {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+      },
+    };
+
+    let token;
+    try {
+      token = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_EXPIRES_IN,
+      });
+    } catch (error) {
+      throw new HttpError(error, 500, "Échec de la génération du token.");
+    }
+
+    return res.status(200).json({
+      token,
+      success: true,
+      message: "Authentifié",
+    });
   } catch (error) {
     console.error(error);
     if (error instanceof HttpError) {
@@ -59,61 +77,67 @@ const userLoginUser = async (req, res) => {
 };
 
 /**
- * Réinitialiser le secret (mot de passe) d'un utilisateur
- * @async
- * @function
- * @param {object} req - La requête HTTP
- * @param {object} res - La réponse HTTP
- * @param {function} next - La fonction de middleware suivante
- * @returns {Promise<object>} - L'utilisateur avec le secret réinitialisé
+ * Vérifie le code OTP ou le code secret personnel pour la confirmation de l'utilisateur.
+ * @param {Object} req Objet de requête Express.
+ * @param {Object} res Objet de réponse Express.
+ * @param {Function} next Fonction de middleware suivant.
  */
-const resetSecret = async (req, res, next) => {
+const userVerifyOtp = async (req, res) => {
   try {
-    const { id } = req.params;
-    if (!id) {
-      throw createValidationError(
-        "User",
-        "Veuillez fournir l'identifiant de l'utilisateur."
-      );
-    }
-    const user = await UserService.getUserByCompte(id);
-    if (!user) {
-      throw createNotFoundError("User", `Utilisateur introuvable`);
-    }
+    const { phone, otp } = req.body;
+    const user = await UserService.getUserByPhone(phone);
+    if (
+      user &&
+      (user.role === enumUsersRoles.ADMIN ||
+        user.role === enumUsersRoles.PASSENGER ||
+        user.role === enumUsersRoles.DRIVER)
+    ) {
+      const valid = await comparePassword(otp, user.secret);
+      if (!valid) {
+        throw createNotFoundError(
+          "Compte",
+          "Le code secret personnel est incorrect !"
+        );
+      }
 
-    if (enumUsersRoles.TEACHER !== user.role) {
-      // Utilisation de enumUsersRoles au lieu de userRole
-      throw createNotFoundError(
-        "User",
-        "Le rôle de l'utilisateur n'est pas connu."
-      );
-    }
+      await UserService.updateUserConfirmationStatus(phone);
 
-    if (res.locals.loggedInUser.role !== enumUsersRoles.TEACHER) {
-      // Utilisation de enumUsersRoles au lieu de userRole
-      throw createNotFoundError(
-        "User",
-        "Vous n'êtes pas autorisé à réinitialiser le secret."
-      );
+      return res.json({
+        code: 200,
+        msg: "Code Secret valide, vérification réussie.",
+        phone,
+      });
     }
 
-    const secret = generateOTP();
-    const hashedSecret = await hashSecret(secret);
+    // const storedData = otpData.get(email);
+    // if (isValidCode(storedData, otp)) {
+    //   otpData.delete(email);
+    //   await updateUserConfirmationStatus(email);
 
-    const updatedUser = await UserService.updateUserById(user._id, {
-      secret: hashedSecret,
-    });
-    const emailOptions = generateSecretResetEmail(updatedUser, secret);
-    await sendVerificationEmail(emailOptions);
-
-    return res.json({ code: 200, user });
-  } catch (e) {
-    next(e);
+    //   return res.json({
+    //     code: 200,
+    //     msg: "Code OTP valide, vérification réussie.",
+    //     email,
+    //   });
+    // } else {
+    //   let error = new Error(
+    //     "Code OTP invalide ou expiré, vérification échouée."
+    //   );
+    //   error.statusCode = 498;
+    //   throw error;
+    // }
+  } catch (error) {
+    console.error(error);
+    if (error instanceof HttpError) {
+      res.status(error.statusCode).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Internal Server Error" });
+    }
   }
 };
 
 module.exports = {
   userRegisterUser,
   userLoginUser,
-  resetSecret,
+  userVerifyOtp,
 };

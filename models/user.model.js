@@ -4,23 +4,23 @@ const enumUsersRoles = require("../utils/enums/enumUserRoles");
 const UserSchema = new mongoose.Schema({
   firstname: {
     type: String,
-    required: [true, "Please give the firstname"],
+    required: [false, "Please give the firstname"],
   },
   lastname: {
     type: String,
-    required: [true, "Please give the lastname"],
+    required: [false, "Please give the lastname"],
   },
   dateofbirth: {
     type: Date,
-    required: [true, "Please give the date of birth"],
+    required: [false, "Please give the date of birth"],
   },
   nationality: {
     type: String,
-    required: [true, "Please give the nationality"],
+    required: [false, "Please give the nationality"],
   },
   sexe: {
     type: String,
-    required: [true, "Please give thesexe"],
+    required: [false, "Please give thesexe"],
     enum: ["M", "F"],
   },
   role: {
@@ -29,6 +29,10 @@ const UserSchema = new mongoose.Schema({
     default: enumUsersRoles.PASSENGER,
   },
   secret: {
+    type: String,
+    default: null,
+  },
+  password: {
     type: String,
     default: null,
   },
