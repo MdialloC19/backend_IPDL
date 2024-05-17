@@ -8,6 +8,8 @@ router.get("/", (req, res) => {
   res.json({ message: "Welcome to the authentication." });
 });
 
+const reviewRoutes = require("./review.routes");
+
 /**
  * @desc Route to register user
  * @route POST api/users
@@ -26,5 +28,7 @@ router.post(
 router.post("/login" /*, middleware.validateLogin*/, user.userLoginUser);
 
 router.put("/resetSecret/:id", allowIfLoggedin, user.resetSecret);
+
+router.use("/review", reviewRoutes);
 
 module.exports = router;
