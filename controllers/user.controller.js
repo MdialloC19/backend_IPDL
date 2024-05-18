@@ -31,6 +31,7 @@ const userRegisterUser = async (req, res) => {
 };
 
 const userLoginUser = async (req, res) => {
+    console.log("logging in");
     try {
         const { phone, password } = req.body;
 
@@ -61,12 +62,18 @@ const userLoginUser = async (req, res) => {
             throw new HttpError(error, 500, "Échec de la génération du token.");
         }
 
+        console.log("connected!");
         return res.status(200).json({
+            userId: user._id,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            role: user.role,
             token,
             success: true,
             message: "Authentifié",
         });
     } catch (error) {
+        console.log("login error...");
         console.error(error);
         if (error instanceof HttpError) {
             res.status(error.statusCode).json({ message: error.message });
