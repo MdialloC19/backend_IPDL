@@ -10,7 +10,12 @@ exports.getMessagesByRoom = async (req, res) => {
 
         const updatedMessages = messages.map((message) => {
             const messageObject = message.toObject();
-            messageObject.user = messageObject.userId;
+            messageObject.username = (
+                (messageObject.userId.firstname || "") +
+                " " +
+                (messageObject.userId.lastname || "")
+            ).trim();
+            // messageObject.user = messageObject.userId;
             messageObject.userId = messageObject.userId._id;
             return messageObject;
         });
