@@ -17,6 +17,7 @@ exports.getMessagesByRoom = async (req, res) => {
             ).trim();
             // messageObject.user = messageObject.userId;
             messageObject.userId = messageObject.userId._id;
+            message.from = messageObject.userId;
             return messageObject;
         });
 
