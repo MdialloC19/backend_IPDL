@@ -18,7 +18,6 @@ const configureSockets = (io, client) => {
          */
         message: async (message) => {
             if (message.room) {
-                client.broadcast.to(message.room).emit("message", message);
                 io.to(message.room).emit("message", message);
 
                 // Save the message to the database
