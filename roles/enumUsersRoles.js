@@ -1,5 +1,7 @@
+const { PASSENGER } = require("../utils/enums/enumUserRoles");
+
 const enumUsersRoles = {
-  STUDENT: "STUDENT",
+  PASSENGER: "PASSENGER",
   TEACHER: "TEACHER",
   ADMIN: "ADMIN",
   EDITOR: "EDITOR",
