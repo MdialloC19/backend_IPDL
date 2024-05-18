@@ -92,12 +92,12 @@ const userVerifyOtp = async (req, res) => {
                 user.role === enumUsersRoles.PASSENGER ||
                 user.role === enumUsersRoles.DRIVER)
         ) {
-            console.log(user.secret, bcrypt.hashSync(otp, 10));
             const valid = await comparePassword(otp, user.secret);
             if (!valid) {
-                return res
-                    .status(400)
-                    .json({ message: "Code Secret invalide" });
+                throw createNotFoundError(
+                    "Compte",
+                    "Le code secret personnel est incorrect !"
+                );
             }
 
             await UserService.updateUserConfirmationStatus(phone);

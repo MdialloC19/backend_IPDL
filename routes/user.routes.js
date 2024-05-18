@@ -5,7 +5,7 @@ const router = express.Router();
 
 const allowIfLoggedin = require("../middlewares/allowedIfLoggedin.middleware");
 router.get("/", (req, res) => {
-  res.json({ message: "Welcome to the authentication." });
+    res.json({ message: "Welcome to the authentication." });
 });
 
 /**
@@ -14,8 +14,8 @@ router.get("/", (req, res) => {
  * @access Private available for Admin
  */
 router.post(
-  "/register" /*, middleware.validateRegister*/,
-  user.userRegisterUser
+    "/register" /*, middleware.validateRegister*/,
+    user.userRegisterUser
 );
 
 /**
