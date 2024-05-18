@@ -13,7 +13,7 @@ const configureSockets = (io, client) => {
                 const newMessage = new Conversation({
                     roomId: message.room,
                     userId: message.from, // Assumes `from` is userId
-                    message: message.text, // Assumes `text` is the message content
+                    text: message.text, // Assumes `text` is the message content
                 });
                 await newMessage.save();
 

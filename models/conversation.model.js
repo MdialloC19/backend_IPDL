@@ -10,7 +10,7 @@ const ConversationSchema = new mongoose.Schema({
         ref: "user",
         required: true,
     },
-    message: {
+    text: {
         type: String,
         required: true,
     },
