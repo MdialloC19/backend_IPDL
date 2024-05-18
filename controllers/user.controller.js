@@ -69,7 +69,6 @@ const userLoginUser = async (req, res) => {
             lastname: user.lastname,
             role: user.role,
             phone: user.phone,
-            ...user,
             token,
             success: true,
             message: "Authentifié",
