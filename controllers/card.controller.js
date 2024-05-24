@@ -20,7 +20,7 @@ exports.uploadCard = (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur lors du téléchargement des images.",
-            error: error.message,
+            qerror: error.message,
         });
     }
 };

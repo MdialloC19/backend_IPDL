@@ -4,7 +4,7 @@ const userRoutes = require("./user.routes");
 const conversationRoutes = require("./conversation.routes");
 const reviewRoutes = require("./review.routes");
 const intineraryRoutes = require("./itinerary.routes");
-const cardRoutes = require("./routes/cardRoutes");
+const cardRoutes = require("./upload.routes");
 const routeTrackRoutes = require("./routeTrack.routes");
 
 const optRoutes = require("./optimisation");
