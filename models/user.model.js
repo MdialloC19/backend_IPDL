@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const enumUsersRoles = require("../utils/enums/enumUserRoles");
+const enumUsersRoles = require("../utils/enums/enumTypeDocument");
 
 const UserSchema = new mongoose.Schema({
     firstname: {
@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: Object.values(enumUsersRoles),
-        default: enumUsersRoles.PASSENGER,
+        default: enumUsersRoles.PARTICIPANT,
     },
     secret: {
         type: String,

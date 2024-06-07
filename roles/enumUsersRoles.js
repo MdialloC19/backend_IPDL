@@ -1,8 +1,9 @@
-const { PASSENGER } = require("../utils/enums/enumUserRoles");
-
 const enumUsersRoles = {
-    PASSENGER: "PASSENGER",
-    TEACHER: "TEACHER",
+    PARTICIPANT: "PARTICIPANT",
+    STAGIAIRE: "STAGIAIRE",
+    DOCTORANT: "DOCTORANT",
+    CHEFDEPROJET: "CHEFPROJET",
+    BAILLEUR: "BAILLEUR",
     ADMIN: "ADMIN",
     EDITOR: "EDITOR",
     SUPERADMIN: "SUPERADMIN",

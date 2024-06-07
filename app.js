@@ -14,10 +14,11 @@ const path = require("path");
 const dotenv = require("dotenv");
 dotenv.config();
 
-const connectDB = require("./helpers/db");
+const connectDB = require("./database/db");
 const onConnection = require("./services/socket.services");
 const app = express();
-connectDB();
+
+connectDB().catch(console.dir);
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use(cors());
 app.use(bodyParser.json());

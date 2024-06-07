@@ -1,6 +1,6 @@
 const UserService = require("../services/user.services");
 const HttpError = require("../utils/execptions"); // Vérifiez ce chemin
-const enumUsersRoles = require("../utils/enums/enumUserRoles");
+const enumUsersRoles = require("../utils/enums/enumTypeDocument");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken"); // Assurez-vous d'importer jwt
 
