@@ -11,16 +11,26 @@ const ProjectSchema = new mongoose.Schema({
     },
     startDate: {
         type: Date,
-        required: [true, "Please provide the project start date"],
+        required: [false, "Please provide the project start date"],
     },
     endDate: {
         type: Date,
-        required: [true, "Please provide the project end date"],
+        required: [false, "Please provide the project end date"],
     },
-    phases: [
+    status: {
+        type: String,
+        enum: ["Planned", "In Progress", "Completed", "On Hold"],
+        default: "Planned",
+    },
+    projectManager: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: [true, "Please provide the project manager"],
+    },
+    participants: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Phase",
+            ref: "User",
         },
     ],
     isDeleted: {
@@ -28,6 +38,10 @@ const ProjectSchema = new mongoose.Schema({
         default: false,
     },
     dateCreated: {
+        type: Date,
+        default: Date.now,
+    },
+    dateUpdated: {
         type: Date,
         default: Date.now,
     },
