@@ -178,9 +178,58 @@ const userVerifyOtp = async (req, res) => {
         }
     }
 };
+const getAllUsers = async (req, res) => {
+    try {
+        const result = await UserService.getAllUsers();
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
+
+const getUserByEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const result = await UserService.getUserByEmail(email);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
+
+const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        te;
+
+        const result = await UserService.getUserById(id);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
 
 module.exports = {
     userRegisterUser,
     userLoginUser,
     userVerifyOtp,
+    getAllUsers,
+    getUserByEmail,
+    getUserById,
 };
