@@ -16,10 +16,43 @@ async function hashSecret(secret) {
 const comparePassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
+// const userRegisterUser = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         const registerUser = await UserService.createUser({ email, password });
+//         return res.status(201).json(registerUser);
+//     } catch (error) {
+//         console.error(error);
+//         if (error instanceof HttpError) {
+//             res.status(error.statusCode).json({ message: error.message });
+//         } else {
+//             res.status(500).json({ message: "Internal Server Error" });
+//         }
+//     }
+// };
 const userRegisterUser = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        const registerUser = await UserService.createUser({ email, password });
+        const { email, password, name, lastname, phone, role } = req.body;
+
+        // Vérification des champs obligatoires
+        if (!email || !password) {
+            throw new HttpError(
+                400,
+                "Veuillez fournir une adresse e-mail et un mot de passe."
+            );
+        }
+
+        // Création d'un objet utilisateur avec les champs disponibles
+        const user = {
+            email,
+            password,
+            name,
+            lastname,
+            phone,
+            role,
+        };
+
+        const registerUser = await UserService.createUser(user);
         return res.status(201).json(registerUser);
     } catch (error) {
         console.error(error);

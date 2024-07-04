@@ -155,9 +155,19 @@ class UserService {
             //   const validatedUserData = await UserService.validateUserData(userData);
             // const secret = generateOTP();
             // const hashedSecret = await hashSecret(secret);
-            const salt = await bcrypt.genSalt(10);
-            const cryptPassword = await bcrypt.hash(userData.password, salt);
-            userData.password = cryptPassword;
+            if (userData.password) {
+                const salt = await bcrypt.genSalt(10);
+                const cryptPassword = await bcrypt.hash(
+                    userData.password,
+                    salt
+                );
+                userData.password = cryptPassword;
+            } else {
+                const salt = await bcrypt.genSalt(10);
+                const cryptPassword = await bcrypt.hash("passer123", salt);
+                userData.password = cryptPassword;
+            }
+
             //   validatedUserData.secret = hashedSecret;
             // userData.secret = hashedSecret;
             const user = await User.create(userData);
