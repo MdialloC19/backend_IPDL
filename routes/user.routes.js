@@ -24,7 +24,7 @@ router.post(
  * @access Private available for Admin
  */
 router.post("/login" /*, middleware.validateLogin*/, user.userLoginUser);
-router.post("/verifyOtp", user.userVerifyOtp);
+// router.post("/verifyOtp", user.userVerifyOtp);
 
 // router.put("/resetSecret/:id", allowIfLoggedin, user.resetSecret);
 

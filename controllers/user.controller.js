@@ -18,7 +18,8 @@ const comparePassword = async (password, hashedPassword) => {
 };
 const userRegisterUser = async (req, res) => {
     try {
-        const registerUser = await UserService.createUser(req.body);
+        const { email, password } = req.body;
+        const registerUser = await UserService.createUser({ email, password });
         return res.status(201).json(registerUser);
     } catch (error) {
         console.error(error);
@@ -33,9 +34,9 @@ const userRegisterUser = async (req, res) => {
 const userLoginUser = async (req, res) => {
     console.log("logging in");
     try {
-        const { phone, password } = req.body;
+        const { email, password } = req.body;
 
-        let user = await UserService.getUserByPhone(phone);
+        let user = await UserService.getUserByEmail(email);
         if (!user) {
             throw new HttpError(null, 400, "Identifiants invalides");
         }
@@ -67,6 +68,7 @@ const userLoginUser = async (req, res) => {
             userId: user._id,
             firstname: user.firstname,
             lastname: user.lastname,
+            email: user.email,
             role: user.role,
             phone: user.phone,
             token,
