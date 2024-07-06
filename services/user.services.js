@@ -153,16 +153,27 @@ class UserService {
     static async createUser(userData) {
         try {
             //   const validatedUserData = await UserService.validateUserData(userData);
-            const secret = generateOTP();
-            const hashedSecret = await hashSecret(secret);
-            const salt = await bcrypt.genSalt(10);
-            const cryptPassword = await bcrypt.hash(userData.password, salt);
-            userData.password = cryptPassword;
+            // const secret = generateOTP();
+            // const hashedSecret = await hashSecret(secret);
+            if (userData.password) {
+                const salt = await bcrypt.genSalt(10);
+                const cryptPassword = await bcrypt.hash(
+                    userData.password,
+                    salt
+                );
+                userData.password = cryptPassword;
+            } else {
+                const salt = await bcrypt.genSalt(10);
+                const cryptPassword = await bcrypt.hash("passer123", salt);
+                userData.password = cryptPassword;
+            }
+
             //   validatedUserData.secret = hashedSecret;
-            userData.secret = hashedSecret;
+            // userData.secret = hashedSecret;
             const user = await User.create(userData);
-            const content = await SMS.sendSmsOPT(secret);
-            await SMSService.sendSMSAndSave(content, userData.phone);
+            console.log(userData);
+            // const content = await SMS.sendSmsOPT(secret);
+            // await SMSService.sendSMSAndSave(content, userData.phone);
 
             return user;
         } catch (error) {

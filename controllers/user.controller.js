@@ -16,9 +16,43 @@ async function hashSecret(secret) {
 const comparePassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
+// const userRegisterUser = async (req, res) => {
+//     try {
+//         const { email, password } = req.body;
+//         const registerUser = await UserService.createUser({ email, password });
+//         return res.status(201).json(registerUser);
+//     } catch (error) {
+//         console.error(error);
+//         if (error instanceof HttpError) {
+//             res.status(error.statusCode).json({ message: error.message });
+//         } else {
+//             res.status(500).json({ message: "Internal Server Error" });
+//         }
+//     }
+// };
 const userRegisterUser = async (req, res) => {
     try {
-        const registerUser = await UserService.createUser(req.body);
+        const { email, password, name, lastname, phone, role } = req.body;
+
+        // Vérification des champs obligatoires
+        if (!email || !password) {
+            throw new HttpError(
+                400,
+                "Veuillez fournir une adresse e-mail et un mot de passe."
+            );
+        }
+
+        // Création d'un objet utilisateur avec les champs disponibles
+        const user = {
+            email,
+            password,
+            name,
+            lastname,
+            phone,
+            role,
+        };
+
+        const registerUser = await UserService.createUser(user);
         return res.status(201).json(registerUser);
     } catch (error) {
         console.error(error);
@@ -33,9 +67,9 @@ const userRegisterUser = async (req, res) => {
 const userLoginUser = async (req, res) => {
     console.log("logging in");
     try {
-        const { phone, password } = req.body;
+        const { email, password } = req.body;
 
-        let user = await UserService.getUserByPhone(phone);
+        let user = await UserService.getUserByEmail(email);
         if (!user) {
             throw new HttpError(null, 400, "Identifiants invalides");
         }
@@ -67,6 +101,7 @@ const userLoginUser = async (req, res) => {
             userId: user._id,
             firstname: user.firstname,
             lastname: user.lastname,
+            email: user.email,
             role: user.role,
             phone: user.phone,
             token,
@@ -143,9 +178,58 @@ const userVerifyOtp = async (req, res) => {
         }
     }
 };
+const getAllUsers = async (req, res) => {
+    try {
+        const result = await UserService.getAllUsers();
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
+
+const getUserByEmail = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const result = await UserService.getUserByEmail(email);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
+
+const getUserById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        te;
+
+        const result = await UserService.getUserById(id);
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(error);
+        if (error instanceof HttpError) {
+            res.status(error.statusCode).json({ message: error.message });
+        } else {
+            res.status(500).json({ message: "Erreur interne du serveur." });
+        }
+    }
+};
 
 module.exports = {
     userRegisterUser,
     userLoginUser,
     userVerifyOtp,
+    getAllUsers,
+    getUserByEmail,
+    getUserById,
 };

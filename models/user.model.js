@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const enumUsersRoles = require("../utils/enums/enumTypeDocument");
+const enumUsersRoles = require("../roles/enumUsersRoles");
 
 const UserSchema = new mongoose.Schema({
     firstname: {
@@ -38,7 +38,12 @@ const UserSchema = new mongoose.Schema({
     },
     phone: {
         type: String,
-        required: true,
+        required: false,
+        unique: true,
+    },
+    email: {
+        type: String,
+        required: false,
         unique: true,
     },
     confirmed: {
